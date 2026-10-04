@@ -1,0 +1,44 @@
+# HTCondor job for one resolved low-rank zeroth-order run.
+#
+# The script rewrites one metrics file and one checkpoint per experiment
+# inside outputs/ every FLUSH_EVERY updates (constants.py). The file name
+# includes the model, dataset, rank, batch size, learning rate, k, epsilon,
+# seed, test size, and epochs, so parallel jobs do not overwrite each other.
+# Condor copies the outputs directory back on exit and on eviction.
+
+container_image =  osdf:///chtc/staging/a/agoyal33/chronos4.sif 
+
+
+#shell = pip3 install datasets && /opt/conda/envs/chronos/bin/python -u main.py --model roberta-large --perturbation-rank 8 --batch-size 64 --learning-rate 8e-4 --dataset rte --k 16 --epsilon 1e-4 --seed 0 --test-size 1000 --epochs 1500 --output-dir outputs
+#shell = pip3 install datasets && /opt/conda/envs/chronos/bin/python -u main.py --model roberta-large --perturbation-rank 8 --batch-size 64 --learning-rate 8e-4 --dataset snli --k 16 --epsilon 1e-4 --seed 0 --test-size 1000 --epochs 1500 --output-dir outputs
+#shell = pip3 install datasets && /opt/conda/envs/chronos/bin/python -u main.py --model roberta-large --perturbation-rank 8 --batch-size 64 --learning-rate 8e-4 --dataset mnli --k 16 --epsilon 1e-4 --seed 0 --test-size 1000 --epochs 1500 --output-dir outputs
+
+#shell = pip3 install datasets && /opt/conda/envs/chronos/bin/python -u main.py --model roberta-large --perturbation-rank 8 --batch-size 64 --learning-rate 8e-4 --dataset sst2 --k 512 --epsilon 1e-4 --seed 0 --test-size 1000 --epochs 1500 --output-dir outputs
+#shell = pip3 install datasets && /opt/conda/envs/chronos/bin/python -u main.py --model roberta-large --perturbation-rank 8 --batch-size 64 --learning-rate 8e-4 --dataset sst5 --k 512 --epsilon 1e-4 --seed 0 --test-size 1000 --epochs 1500 --output-dir outputs
+
+gpus_maximum_capability = 9.0
+
+should_transfer_files = YES
+transfer_input_files = main.py, pipeline.py, data.py, directions.py, forward.py, constants.py
+transfer_output_files = outputs
+when_to_transfer_output = ON_EXIT_OR_EVICT
+
+stream_output = True
+stream_error = True
+
+
+
+
+# Logs
+output = /home/agoyal33/zeroth_order/condor_logs/gpu_$(Cluster)_$(Process).out
+error  = /home/agoyal33/zeroth_order/condor_logs/gpu_$(Cluster)_$(Process).err
+log    = /home/agoyal33/zeroth_order/condor_logs/gpu_$(Cluster)_$(Process).log
+
+request_gpus = 1
+request_cpus = 4
+request_memory = 40 GB
+request_disk   = 100GB
+
++GPUJobLength = "short"
+
+queue 1
